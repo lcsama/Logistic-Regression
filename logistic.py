@@ -1,8 +1,9 @@
 import argparse
-
+import time
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.datasets import make_moons
+
 
 
 #Draw the figure
@@ -48,6 +49,14 @@ def Gauss_Newton(X, Y,iteration):
         weight-=np.linalg.solve(H,first_derivative)
     return weight
 
+def Grad_Descent(X, Y, lr, iteration):
+    m, n = np.shape(X)
+    # initialise the weight
+    weight = np.zeros((n, 1))
+    for k in range(iteration):  # heavy on matrix operations
+        hypothesis=sigmoid(X.dot(weight))
+        weight += lr * (X.T @ (Y - hypothesis))  
+    return weight
 
 def gradAscent(X, Y, lr, iteration):
     pass
@@ -57,6 +66,7 @@ def stocGradAscent(X, Y, lr, iteration):
 
 
 def run_logistic(method,lr,iteration):
+    start = time.time()
     X, Y = make_moons(200, noise=0.20,random_state=0)
     #add a colume
     X=np.insert(X, 0, 1, axis=1)
@@ -64,10 +74,14 @@ def run_logistic(method,lr,iteration):
     Y=Y.reshape(200,1)
     if method == 'GN':
         weights = Gauss_Newton(X, Y,iteration)
+    elif method == 'GD':
+        weights = Grad_Descent(X, Y, lr, iteration)
     else:
         pass
         # weights = gradAscent(X, Y)
         # weights = stocGradAscent(X, Y)
+    duration = time.time() - start
+    print('{}:{}s'.format(method,duration))
     plotBestFit(X, Y, weights)
     
 
@@ -78,7 +92,11 @@ def main():
     parser.add_argument('--learning_rate', type=float, default = 0.001, help='The Learning Rate of GD.')
     parser.add_argument('--iteration', type=int, default = 6, help='The iteration times.')
     args = parser.parse_args()
+    
     run_logistic(args.solve_method,args.learning_rate,args.iteration)
+    
+
+    
 
 if __name__ == "__main__":
     main()
