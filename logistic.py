@@ -53,33 +53,53 @@ def Grad_Descent(X, Y, lr, iteration):
     m, n = np.shape(X)
     # initialise the weight
     weight = np.zeros((n, 1))
-    for k in range(iteration):  # heavy on matrix operations
+    for k in range(iteration):  # heavy on iteration
         hypothesis=sigmoid(X.dot(weight))
+        # original it's a sum() operation like sum((Y[i]-hypothesis[i])x[i]), but we can change it to matrix mul
         weight += lr * (X.T @ (Y - hypothesis))  
     return weight
 
-def gradAscent(X, Y, lr, iteration):
-    pass
+def stocGradAscent(X, Y, lr):
+    m, n = np.shape(X)
+    # initialise the weight
+    weight = np.zeros(n)
+    for k in range(m):  
+        hypothesis=sigmoid(sum(X[k]*weight))
+        weight += lr * (X[k] * (Y[k] - hypothesis))  
+    return weight
 
-def stocGradAscent(X, Y, lr, iteration):
-    pass
+def miniBatchGradAscent(X, Y, lr, iteration, batch_size):
+    m, n = np.shape(X)
+    # initialise the weight
+    weight = np.zeros((n, 1))
+    for k in range(iteration):
+        # take m samples to GradAscent
+        for i in range(0,m,batch_size):
+            mX = X[i:i+batch_size]
+            mY = Y[i:i+batch_size]
+            hypothesis=sigmoid(mX.dot(weight))
+            weight += lr * (mX.T @ (mY - hypothesis))  
+    return weight
 
 
-def run_logistic(method,lr,iteration):
+def run_logistic(method, lr, iteration, batch_size):
     start = time.time()
     X, Y = make_moons(200, noise=0.20,random_state=0)
-    #add a colume
+    #add a colume as bias
     X=np.insert(X, 0, 1, axis=1)
     #change the Y to a mat
     Y=Y.reshape(200,1)
     if method == 'GN':
-        weights = Gauss_Newton(X, Y,iteration)
+        weights = Gauss_Newton(X, Y, iteration)
     elif method == 'GD':
         weights = Grad_Descent(X, Y, lr, iteration)
+    elif method == 'SGD':
+        weights = stocGradAscent(X, Y, lr)
+    elif method == 'MBGD':
+        weights = miniBatchGradAscent(X, Y, lr, iteration, batch_size)
     else:
-        pass
-        # weights = gradAscent(X, Y)
-        # weights = stocGradAscent(X, Y)
+        print("Wrong method, try GN or GD or SGD or MBGD")
+        return
     duration = time.time() - start
     print('{}:{}s'.format(method,duration))
     plotBestFit(X, Y, weights)
@@ -87,13 +107,14 @@ def run_logistic(method,lr,iteration):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Run the tracker on your webcam.')
+    parser = argparse.ArgumentParser(description='Run the program with the algorithm you want to use.')
     parser.add_argument('solve_method', type=str, help='Name of slove method.GN = GaussNewton')
     parser.add_argument('--learning_rate', type=float, default = 0.001, help='The Learning Rate of GD.')
     parser.add_argument('--iteration', type=int, default = 6, help='The iteration times.')
+    parser.add_argument('--batch_size', type=int, default = 20, help='Batch size for batch GD.')
     args = parser.parse_args()
     
-    run_logistic(args.solve_method,args.learning_rate,args.iteration)
+    run_logistic(args.solve_method,args.learning_rate,args.iteration, args.batch_size)
     
 
     
