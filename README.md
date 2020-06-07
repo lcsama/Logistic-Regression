@@ -1,4 +1,4 @@
-# Machine Learning
+# README
 
 Achieve some machine learning model with `numpy`. Compare different optimization algorithm in those model, waiting for more optimization algorithm.
 
