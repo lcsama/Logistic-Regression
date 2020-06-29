@@ -8,7 +8,7 @@ Use `sklearn.datesets` to generate training data.
 
 Logistic Regression with difference optimization algorithm. 
 
-**USE EXAMPLE:** 
+**RUN EXAMPLE:** 
 
 + Gauss-Newton iteration (GN): `python logistic.py GN`
 + Gradient Descent (GD): `python logistic.py GD --learning_rate=0.001 --iteration=500`
